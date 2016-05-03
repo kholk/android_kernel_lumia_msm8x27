@@ -600,8 +600,8 @@ static void __init reserve_ion_memory(void)
 				dma_declare_contiguous(
 					heap->priv,
 					heap->size,
-					0,
-					0xb0000000);
+					0x9c000000,
+					0xa0000000);
 			}
 		}
 	}
@@ -614,7 +614,7 @@ static void __init reserve_ion_memory(void)
 	 * alignments are considered a configuration issue
 	 */
 
-	fixed_low_start = MSM8930_FIXED_AREA_START;
+	fixed_low_start = 0x97e00000;
 	if (low_use_cma) {
 		BUG_ON(!IS_ALIGNED(fixed_low_size + HOLE_SIZE, cma_alignment));
 		BUG_ON(!IS_ALIGNED(fixed_low_start, cma_alignment));
