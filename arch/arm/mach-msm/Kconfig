@@ -838,6 +838,12 @@ config MACH_MSM8930_EVT
 	help
 	  Support for the Qualcomm Reference Design 8930 EVT device.
 
+config MACH_NOKIA_FAME
+	depends on ARCH_MSM8930
+	bool "Nokia Lumia 520 (Fame)
+	help
+	  Support for the Nokia Lumia 520 (Fame) board.
+
 config MACH_MSM8627_CDP
 	depends on ARCH_MSM8930
 	bool "MSM8627 CDP"
