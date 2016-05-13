@@ -66,6 +66,8 @@
 #define TVOUT_PANEL_NAME	"tvout_msm"
 #define MIPI_VIDEO_ORISE_FWVGA_PANEL_NAME	"mipi_video_orise_fwvga"
 
+#define MIPI_CMD_RACE_FWVGA_PANEL_NAME		"mipi_cmd_race_fwvga"
+
 static struct resource msm_fb_resources[] = {
 	{
 		.flags = IORESOURCE_DMA,
@@ -130,11 +132,11 @@ static int msm_fb_dsi_client_reset(int hold)
 	if (hold) {
 		retVal = gpio_direction_output(DISP_RST_GPIO , 0);
 	} else {
-		msleep(2);
+		msleep(10);
 		retVal = gpio_direction_output(DISP_RST_GPIO , 1);
-		msleep(2);
+		msleep(10);
 		retVal |= gpio_direction_output(DISP_RST_GPIO , 0);
-		msleep(2);
+		msleep(10);
 		retVal |= gpio_direction_output(DISP_RST_GPIO , 1);
 	}
 
@@ -152,9 +154,9 @@ extern unsigned int fih_get_product_phase(void);
 static int mipi_dsi_panel_power(int on)
 {
 	int rc = 0, retVal = 0;
+	static struct regulator *reg_dsi_vddio;
 	static struct regulator *reg_vdd, *reg_iovdd, *reg_vdd_mipi;
 	static bool dsi_power_on = false;
-	unsigned int phaseid = 0;
 
 	pr_info("[DISPLAY] +%s(%d)\n", __func__, on);
 
@@ -185,7 +187,7 @@ static int mipi_dsi_panel_power(int on)
 			retVal = -ENODEV;
 			goto error;
 		}
-
+					/********** CHECKME ***********/
 		rc = regulator_set_voltage(reg_vdd, 2800000, 2800000);
 		if (rc) {
 			pr_err("[DISPLAY]set_voltage reg_vdd failed, rc=%d\n", rc);
@@ -193,32 +195,38 @@ static int mipi_dsi_panel_power(int on)
 			goto error;
 		}
 
-		/* INIT IOVDD FOR LCD*/
-		phaseid = fih_get_product_phase();
-		if(phaseid == PHASE_EVM ){
-		pr_info("[DISPLAY]Get L18\n");
-			reg_iovdd = regulator_get(&msm_mipi_dsi1_device.dev,
-				"lcd_iovdd");
-		}else{
-			pr_info("[DISPLAY]Get LVS2\n");
-			reg_iovdd = regulator_get(&msm_mipi_dsi1_device.dev,
-				"lcd_lvs2");
-		}
-		if (IS_ERR(reg_iovdd)) {
-			pr_err("[DISPLAY]could not get reg_iovdd, rc = %ld\n",
-				PTR_ERR(reg_iovdd));
-			retVal = -ENODEV;
+#ifdef CONFIG_MACH_NOKIA_FAME
+		pr_info("Enabling display vregs for Nokia FAME...\n");
+		reg_dsi_vddio = regulator_get (
+			&msm_mipi_dsi1_device.dev, "dsi_vddio");
+		if (IS_ERR(reg_dsi_vddio)) {
+			pr_err("DISP: Cannot get dsi_vddio L23 VREG!!\n");
+			retVal = -EINVAL;
 			goto error;
 		}
 
-		if(phaseid == PHASE_EVM ){
-			rc = regulator_set_voltage(reg_iovdd, 1800000, 1800000);
-			if (rc) {
-				pr_err("[DISPLAY]set_voltage reg_iovdd failed, rc=%d\n", rc);
-				rc = -ENODEV;
-				goto error;
-			}
+		rc = regulator_set_voltage(reg_iovdd, 1800000, 1800000);
+		if (rc) {
+			pr_err("DISP: Cannot set voltage for DSI VDDIO\n");
+			retVal = -EINVAL;
+			goto error;
 		}
+
+		reg_iovdd = regulator_get(
+			&msm_mipi_dsi1_device.dev, "lcd_fame_iovdd");
+		if (IS_ERR(reg_iovdd)) {
+			pr_err("DISP: Cannot get lcd_iovdd L11 VREG!!\n");
+			retVal = -EINVAL;
+			goto error;
+		}
+
+		rc = regulator_set_voltage(reg_iovdd, 1800000, 1800000);
+		if (rc) {
+			pr_err("DISP: Cannot set voltage for LCD IOVDD\n");
+			retVal = -EINVAL;
+			goto error;
+		}
+#endif
 
 		dsi_power_on = true;
 	}
@@ -242,9 +250,21 @@ static int mipi_dsi_panel_power(int on)
 			retVal = -EINVAL;
 			goto error;
 		}
+		rc = regulator_set_optimum_mode(reg_dsi_vddio, 100000);
+		if (rc < 0) {
+			pr_err("[DISPLAY]set_optimum_mode reg_iovdd failed, rc=%d\n", rc);
+			retVal = -EINVAL;
+			goto error;
+		}
 		rc = regulator_enable(reg_vdd_mipi);
 		if (rc) {
 			pr_err("[DISPLAY]enable VDD_MIPI failed, rc=%d\n", rc);
+			retVal = -ENODEV;
+			goto error;
+		}
+		rc = regulator_enable(reg_dsi_vddio);
+		if (rc) {
+			pr_err("[DISPLAY]enable dsi_vddio failed, rc=%d\n", rc);
 			retVal = -ENODEV;
 			goto error;
 		}
@@ -277,6 +297,12 @@ static int mipi_dsi_panel_power(int on)
 		rc = regulator_disable(reg_vdd_mipi);
 		if (rc) {
 			pr_err("[DISPLAY]disable reg_vdd_mipi failed, rc=%d\n", rc);
+			retVal = -ENODEV;
+			goto error;
+		}
+		rc = regulator_disable(reg_dsi_vddio);
+		if (rc) {
+			pr_err("[DISPLAY]disable reg_dsi_vddio failed, rc=%d\n", rc);
 			retVal = -ENODEV;
 			goto error;
 		}
