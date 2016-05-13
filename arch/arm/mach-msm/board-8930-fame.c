@@ -148,7 +148,8 @@ static struct platform_device msm_fm_platform_init = {
 
 #if defined(CONFIG_GPIO_SX150X) || defined(CONFIG_GPIO_SX150X_MODULE)
 
-struct sx150x_platform_data msm8930_sx150x_data[] = {
+/* SX150X GPIO Expander for camera */
+struct sx150x_platform_data board_fame_camexpander_data[] = {
 	[SX150X_CAM] = {
 		.gpio_base         = GPIO_CAM_EXPANDER_BASE,
 		.oscio_is_gpo      = false,
@@ -325,7 +326,7 @@ static struct platform_device ion_adsp_heap_device = {
  * to each other.
  * Don't swap the order unless you know what you are doing!
  */
-struct ion_platform_heap msm8930_heaps[] = {
+struct ion_platform_heap board_fame_heaps[] = {
 		{
 			.id	= ION_SYSTEM_HEAP_ID,
 			.type	= ION_HEAP_TYPE_SYSTEM,
@@ -402,7 +403,7 @@ struct ion_platform_heap msm8930_heaps[] = {
 
 static struct ion_platform_data msm8930_ion_pdata = {
 	.nr = MSM_ION_HEAP_NUM,
-	.heaps = msm8930_heaps,
+	.heaps = board_fame_heaps,
 
 };
 
@@ -1325,7 +1326,7 @@ static struct platform_device *mdm_devices[] __initdata = {
 };
 
 #ifdef CONFIG_FIH_PWM_LED
-static struct led_device_data fih_S3A_led_data[] = {
+static struct led_device_data board_fame_led_devdata[] = {
 /*=====ONLY LPG PIN Group (LPG4~LPG6)=====*/
 		{
 			.name   = "blue",
@@ -1415,17 +1416,17 @@ static struct led_device_data fih_S3A_led_data[] = {
 		},
 };
 
-struct leds_device_data	fih_leds_data = {
-	.device_data = fih_S3A_led_data,
-	.count = sizeof(fih_S3A_led_data) / sizeof(*fih_S3A_led_data),
+struct leds_device_data	board_fame_leds_data = {
+	.device_data = board_fame_led_devdata,
+	.count = sizeof(board_fame_led_devdata) / sizeof(*board_fame_led_devdata),
 };
 
 static struct platform_device fih_device_leds = {
-        .name   = "fih_leds",
+        .name   = "fame_leds",
         .id     = -1,
         .dev    =
         {
-        .platform_data = &fih_leds_data,
+        .platform_data = &board_fame_leds_data,
         },
 };
 #endif
@@ -1513,7 +1514,7 @@ static uint16_t msm_mpm_bypassed_apps_irqs[] __initdata = {
 	RIVA_APPS_WLAN_DATA_XFER_DONE_IRQ,
 };
 
-struct msm_mpm_device_data msm8930_mpm_dev_data __initdata = {
+struct msm_mpm_device_data board_fame_mpm_dev_data __initdata = {
 	.irqs_m2a = msm_mpm_irqs_m2a,
 	.irqs_m2a_size = ARRAY_SIZE(msm_mpm_irqs_m2a),
 	.bypassed_apps_irqs = msm_mpm_bypassed_apps_irqs,
@@ -1542,7 +1543,7 @@ static void __init msm8930_init_irq(void)
 {
 	struct msm_mpm_device_data *data = NULL;
 #ifdef CONFIG_MSM_MPM
-	data = &msm8930_mpm_dev_data;
+	data = &board_fame_mpm_dev_data;
 #endif
 
 	msm_mpm_irq_extn_init(data);
@@ -2261,7 +2262,7 @@ static struct platform_device S3A_GPIO_key = {
 		},
 };
 
-void __init msm8930_init_key(void)
+void __init board_fame_init_key(void)
 {
 	if (gpio_tlmm_config( GPIO_CFG( GPIO_CAMERA_FOCUS, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_UP, GPIO_CFG_2MA ), GPIO_CFG_ENABLE ))
 		pr_err( "GPIO_CAMERA_FOCUS: gpio_tlmm_config(%d) failed\n", GPIO_CAMERA_FOCUS);
@@ -3388,20 +3389,7 @@ static struct msm_serial_hs_platform_data msm_uart_dm9_pdata = {
 static struct msm_serial_hs_platform_data msm_uart_dm9_pdata;
 #endif
 
-void fih_get_host_version(void)
-{
-    char   fih_host_version[30];
-    snprintf(fih_host_version, 30, "%s.%s.%s.%s\n",
-		VER_HOST_BSP_VERSION,
-		VER_HOST_PLATFORM_NUMBER,
-		VER_HOST_BRANCH_NUMBER,
-		VER_HOST_BUILD_NUMBER);
-
-    printk(KERN_ERR "FIH kernel : HOST Version = %s \r\n",fih_host_version);
-
-}
-
-static void __init msm8930_cdp_init(void)
+static void __init board_fame_init(void)
 {
 	int i, reg_size = 0;
 	int minor_ver = SOCINFO_VERSION_MINOR(socinfo_get_platform_version());
@@ -3412,7 +3400,6 @@ static void __init msm8930_cdp_init(void)
 		pr_err("meminfo_init() failed!\n");
 
 	msm_smd_init();
-	fih_get_host_version();
 
 	platform_device_register(&msm_gpio_device);
 	msm_tsens_early_init(&msm_tsens_pdata);
@@ -3632,7 +3619,7 @@ static void __init msm8930_cdp_init(void)
 		platform_add_devices(mdm_devices, ARRAY_SIZE(mdm_devices));
 
 	#ifdef CONFIG_FIH_KEYBOARD_GPIO
-		msm8930_init_key();
+		board_fame_init_key();
 		platform_device_register( &S3A_GPIO_key );
 	#endif
 
@@ -3641,37 +3628,13 @@ static void __init msm8930_cdp_init(void)
 #endif
 }
 
-MACHINE_START(MSM8930_CDP, "QCT MSM8930 CDP")
+MACHINE_START(NOKIA_FAME, "Nokia Lumia 520")
 	.map_io = msm8930_map_io,
 	.reserve = msm8930_reserve,
 	.init_irq = msm8930_init_irq,
 	.handle_irq = gic_handle_irq,
 	.timer = &msm_timer,
-	.init_machine = msm8930_cdp_init,
-	.init_early = msm8930_allocate_memory_regions,
-	.init_very_early = msm8930_early_memory,
-	.restart = msm_restart,
-MACHINE_END
-
-MACHINE_START(MSM8930_MTP, "QCT MSM8930 MTP")
-	.map_io = msm8930_map_io,
-	.reserve = msm8930_reserve,
-	.init_irq = msm8930_init_irq,
-	.handle_irq = gic_handle_irq,
-	.timer = &msm_timer,
-	.init_machine = msm8930_cdp_init,
-	.init_early = msm8930_allocate_memory_regions,
-	.init_very_early = msm8930_early_memory,
-	.restart = msm_restart,
-MACHINE_END
-
-MACHINE_START(MSM8930_FLUID, "QCT MSM8930 FLUID")
-	.map_io = msm8930_map_io,
-	.reserve = msm8930_reserve,
-	.init_irq = msm8930_init_irq,
-	.handle_irq = gic_handle_irq,
-	.timer = &msm_timer,
-	.init_machine = msm8930_cdp_init,
+	.init_machine = board_fame_init,
 	.init_early = msm8930_allocate_memory_regions,
 	.init_very_early = msm8930_early_memory,
 	.restart = msm_restart,
@@ -3683,32 +3646,9 @@ MACHINE_START(MSM8627_CDP, "QCT MSM8627 CDP")
 	.init_irq = msm8930_init_irq,
 	.handle_irq = gic_handle_irq,
 	.timer = &msm_timer,
-	.init_machine = msm8930_cdp_init,
+	.init_machine = board_fame_init,
 	.init_early = msm8930_allocate_memory_regions,
 	.init_very_early = msm8930_early_memory,
 	.restart = msm_restart,
 MACHINE_END
 
-MACHINE_START(MSM8627_MTP, "QCT MSM8627 MTP")
-	.map_io = msm8930_map_io,
-	.reserve = msm8930_reserve,
-	.init_irq = msm8930_init_irq,
-	.handle_irq = gic_handle_irq,
-	.timer = &msm_timer,
-	.init_machine = msm8930_cdp_init,
-	.init_early = msm8930_allocate_memory_regions,
-	.init_very_early = msm8930_early_memory,
-	.restart = msm_restart,
-MACHINE_END
-
-MACHINE_START(MSM8930_EVT, "QRD8930 SGLTE EVT")
-	.map_io = msm8930_map_io,
-	.reserve = msm8930_reserve,
-	.init_irq = msm8930_init_irq,
-	.handle_irq = gic_handle_irq,
-	.timer = &msm_timer,
-	.init_machine = msm8930_cdp_init,
-	.init_early = msm8930_allocate_memory_regions,
-	.init_very_early = msm8930_early_memory,
-	.restart = msm_restart,
-MACHINE_END
