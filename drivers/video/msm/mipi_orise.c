@@ -113,6 +113,7 @@ static int mipi_orise_lcd_on(struct platform_device *pdev)
 		case NOK_PANEL_RACE:
 			rc = mipi_dsi_cmds_tx(&orise_tx_buf, nok_panel_race_on_cmds,
 					ARRAY_SIZE(nok_panel_race_on_cmds));
+			break;
 		default:
 			printk(KERN_ERR "[DISPLAY] illegal PID <0x%02x>\n", gPanelModel);
 			break;
