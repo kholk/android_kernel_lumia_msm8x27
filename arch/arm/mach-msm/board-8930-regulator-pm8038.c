@@ -116,6 +116,9 @@ VREG_CONSUMERS(L11) = {
 	REGULATOR_SUPPLY("CDC_VDDA_RX",		"sitar1p1-slim"),
 	REGULATOR_SUPPLY("vcc_i2c",		"0-0048"),
 	REGULATOR_SUPPLY("mhl_iovcc18",		"0-0039"),
+#ifdef CONFIG_MACH_NOKIA_FAME
+	REGULATOR_SUPPLY("lcd_fame_iovdd",	"mipi_dsi.1"),
+#endif
 };
 VREG_CONSUMERS(L12) = {
 	REGULATOR_SUPPLY("8038_l12",		NULL),
