@@ -205,7 +205,7 @@ static int mipi_dsi_panel_power(int on)
 			goto error;
 		}
 
-		rc = regulator_set_voltage(reg_iovdd, 1800000, 1800000);
+		rc = regulator_set_voltage(reg_dsi_vddio, 1800000, 1800000);
 		if (rc) {
 			pr_err("DISP: Cannot set voltage for DSI VDDIO\n");
 			retVal = -EINVAL;
