@@ -79,7 +79,7 @@ static int mipi_dsi_off(struct platform_device *pdev)
 	struct msm_fb_data_type *mfd;
 	struct msm_panel_info *pinfo;
 
-	pr_debug("%s+:\n", __func__);
+	pr_info("%s+:\n", __func__);
 
 	mfd = platform_get_drvdata(pdev);
 	pinfo = &mfd->panel_info;
@@ -141,7 +141,7 @@ static int mipi_dsi_off(struct platform_device *pdev)
 	else
 		up(&mfd->dma->mutex);
 
-	pr_debug("%s-:\n", __func__);
+	pr_info("%s-:\n", __func__);
 
 	return ret;
 }
@@ -161,7 +161,7 @@ static int mipi_dsi_on(struct platform_device *pdev)
 	int target_type = 0;
 	int old_nice;
 
-	pr_debug("%s+:\n", __func__);
+	pr_info("%s+:\n", __func__);
 
 	mfd = platform_get_drvdata(pdev);
 	fbi = mfd->fbi;
@@ -176,29 +176,32 @@ static int mipi_dsi_on(struct platform_device *pdev)
 	if (old_nice > -20)
 		set_user_nice(current, -20);
 
+pr_info("RESET PANEL\n");
 	if (mipi_dsi_pdata && mipi_dsi_pdata->dsi_client_reset)
 		mipi_dsi_pdata->dsi_client_reset(1);
 
+pr_info("PREPARE AHB CLOCKS\n");
 	/* cont_splash_clk_ctrl(0); */
 	mipi_dsi_prepare_ahb_clocks();
 
+pr_info("AHB_CTRL\n");
 	mipi_dsi_ahb_ctrl(1);
 
 	clk_rate = mfd->fbi->var.pixclock;
 	clk_rate = min(clk_rate, mfd->panel_info.clk_max);
-
+pr_info("PHY CTRL\n");
 	mipi_dsi_phy_ctrl(1);
 
 	if (mdp_rev == MDP_REV_42 && mipi_dsi_pdata)
 		target_type = mipi_dsi_pdata->target_type;
-
+pr_info("PHY INIT\n");
 	mipi_dsi_phy_init(0, &(mfd->panel_info), target_type);
-
+pr_info("VREGS ON\n");
 	if (mipi_dsi_pdata && mipi_dsi_pdata->dsi_power_save)
 		mipi_dsi_pdata->dsi_power_save(1);
-
+pr_info("DSI CLOCKS\n");
 	mipi_dsi_clk_enable();
-
+pr_info("OUTP\n");
 	MIPI_OUTP(MIPI_DSI_BASE + 0x114, 1);
 	MIPI_OUTP(MIPI_DSI_BASE + 0x114, 0);
 
@@ -255,18 +258,18 @@ static int mipi_dsi_on(struct platform_device *pdev)
 			bpp = 3;	/* Default format set to RGB888 */
 
 		ystride = width * bpp + 1;
-
+pr_info("CMD MODE: SET STRIDES\n");
 		/* DSI_COMMAND_MODE_MDP_STREAM_CTRL */
 		data = (ystride << 16) | (mipi->vc << 8) | DTYPE_DCS_LWRITE;
 		MIPI_OUTP(MIPI_DSI_BASE + 0x5c, data);
 		MIPI_OUTP(MIPI_DSI_BASE + 0x54, data);
-
+pr_info("CMD MODE: Set PANEL WH\n");
 		/* DSI_COMMAND_MODE_MDP_STREAM_TOTAL */
 		data = height << 16 | width;
 		MIPI_OUTP(MIPI_DSI_BASE + 0x60, data);
 		MIPI_OUTP(MIPI_DSI_BASE + 0x58, data);
 	}
-
+pr_info("INIT DSI HOST\n");
 	mipi_dsi_host_init(mipi);
 
 	if (mipi->force_clk_lane_hs) {
@@ -352,7 +355,7 @@ static int mipi_dsi_on(struct platform_device *pdev)
 	if (old_nice > -20)
 		set_user_nice(current, old_nice);
 
-	pr_debug("%s-:\n", __func__);
+	pr_info("%s-:\n", __func__);
 
 	return ret;
 }
@@ -432,7 +435,7 @@ static int mipi_dsi_probe(struct platform_device *pdev)
 			periph_base = ioremap(MMSS_SERDES_BASE_PHY, 0x100);
 
 			if (periph_base) {
-				pr_debug("periph_base %p\n", periph_base);
+				pr_info("periph_base %p\n", periph_base);
 				writel(0x4, periph_base + 0x28);
 				writel(0xc, periph_base + 0x28);
 			} else {
@@ -444,7 +447,7 @@ static int mipi_dsi_probe(struct platform_device *pdev)
 
 		if (mipi_dsi_pdata) {
 			vsync_gpio = mipi_dsi_pdata->vsync_gpio;
-			pr_debug("%s: vsync_gpio=%d\n", __func__, vsync_gpio);
+			pr_info("%s: vsync_gpio=%d\n", __func__, vsync_gpio);
 		}
 
 		if (mipi_dsi_clk_init(pdev))

@@ -1044,7 +1044,7 @@ static int mdp_bl_scale_config(struct msm_fb_data_type *mfd,
 	curr_bl = mfd->bl_level;
 	bl_scale = data->scale;
 	bl_min_lvl = data->min_lvl;
-	pr_debug("%s: update scale = %d, min_lvl = %d\n", __func__, bl_scale,
+	pr_info("%s: update scale = %d, min_lvl = %d\n", __func__, bl_scale,
 								bl_min_lvl);
 
 	/* update current backlight to use new scaling*/
@@ -1058,7 +1058,7 @@ static int mdp_bl_scale_config(struct msm_fb_data_type *mfd,
 static void msm_fb_scale_bl(__u32 bl_max, __u32 *bl_lvl)
 {
 	__u32 temp = *bl_lvl;
-	pr_debug("%s: input = %d, scale = %d", __func__, temp, bl_scale);
+	pr_info("%s: input = %d, scale = %d", __func__, temp, bl_scale);
 	if (temp >= bl_min_lvl) {
 		/* checking if temp is below bl_max else capping */
 		if (temp > bl_max) {
@@ -1077,7 +1077,7 @@ static void msm_fb_scale_bl(__u32 bl_max, __u32 *bl_lvl)
 		if (temp < bl_min_lvl)
 			temp = bl_min_lvl;
 	}
-	pr_debug("%s: output = %d", __func__, temp);
+	pr_info("%s: output = %d", __func__, temp);
 
 	(*bl_lvl) = temp;
 }
@@ -1301,7 +1301,7 @@ static int msm_fb_blank(int blank_mode, struct fb_info *info)
 			/* if unblank is called when system is in suspend,
 			wait for the system to resume */
 			while (mfd->suspend.op_suspend) {
-				pr_debug("waiting for system to resume\n");
+				pr_info("waiting for system to resume\n");
 				msleep(20);
 			}
 		}
@@ -1588,7 +1588,7 @@ static int msm_fb_register(struct msm_fb_data_type *mfd)
 				     panel_info->mode2_yres + PAGE_SIZE -
 				     remainder_mode2) * mfd->fb_page);
 	else if (mfd->index == 1 || mfd->index == 2) {
-		pr_debug("%s:%d no memory is allocated for fb%d!\n",
+		pr_info("%s:%d no memory is allocated for fb%d!\n",
 			__func__, __LINE__, mfd->index);
 		fix->smem_len = 0;
 	}
@@ -1972,7 +1972,7 @@ static int msm_fb_open_sub(struct fb_info *info, int user)
 			(info->node != 1 && info->node != 2))
 			mdp_set_dma_pan_info(info, NULL, TRUE);
 		else
-			pr_debug("%s:%d no mdp_set_dma_pan_info %d\n",
+			pr_info("%s:%d no mdp_set_dma_pan_info %d\n",
 				__func__, __LINE__, info->node);
 
 		if (mfd->is_panel_ready && !mfd->is_panel_ready())

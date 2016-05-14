@@ -1288,7 +1288,7 @@ static void mdp_hist_read_work(struct work_struct *data)
 	bool hist_ready;
 	mutex_lock(&mgmt->mdp_hist_mutex);
 	if (mgmt->mdp_is_hist_data == FALSE) {
-		pr_debug("%s, Histogram disabled before read.\n", __func__);
+		pr_info("%s, Histogram disabled before read.\n", __func__);
 		ret = -EINVAL;
 		goto error;
 	}
@@ -1439,10 +1439,10 @@ static int mdp_do_histogram(struct fb_info *info,
 		if (!ret) {
 			mgmt->hist = NULL;
 			ret = -ETIMEDOUT;
-			pr_debug("%s: bin collection timedout", __func__);
+			pr_info("%s: bin collection timedout", __func__);
 		} else {
 			mgmt->hist = NULL;
-			pr_debug("%s: bin collection interrupted", __func__);
+			pr_info("%s: bin collection interrupted", __func__);
 		}
 		goto error;
 	}
@@ -1529,7 +1529,7 @@ u32 mdp_get_panel_framerate(struct msm_fb_data_type *mfd)
 		else if (panel_info->type != MIPI_CMD_PANEL)
 			frame_rate = panel_info->lcd.refx100 / 100;
 	}
-	pr_debug("%s type=%d frame_rate=%d\n", __func__,
+	pr_info("%s type=%d frame_rate=%d\n", __func__,
 		 panel_info->type, frame_rate);
 
 	if (frame_rate)
@@ -1561,9 +1561,9 @@ u32 mdp_get_panel_framerate(struct msm_fb_data_type *mfd)
 
 	if (frame_rate == 0) {
 		frame_rate = DEFAULT_FRAME_RATE;
-		pr_debug("%s frame rate=%d is default\n", __func__, frame_rate);
+		pr_info("%s frame rate=%d is default\n", __func__, frame_rate);
 	}
-	pr_debug("%s frame rate=%d total_pixel=%d, pixel_rate=%d\n", __func__,
+	pr_info("%s frame rate=%d total_pixel=%d, pixel_rate=%d\n", __func__,
 		frame_rate, total_pixel, pixel_rate);
 
 	return frame_rate;
@@ -1612,7 +1612,7 @@ void mdp_update_pm(struct msm_fb_data_type *mfd, ktime_t pre_vsync)
 					      vsync_period);
 	if (diff_to_next > vsync_period)
 		return;
-	pr_debug("%s cur_time %d, pre_vsync %d, to_next %d\n",
+	pr_info("%s cur_time %d, pre_vsync %d, to_next %d\n",
 		 __func__,
 		 (int)ktime_to_ms(cur_time),
 		 (int)ktime_to_ms(pre_vsync),
@@ -1850,7 +1850,7 @@ void mdp_clk_ctrl(int on)
 			pr_err("%s: %d: mdp clk off is invalid\n",
 			       __func__, __LINE__);
 	}
-	pr_debug("%s: on=%d cnt=%d\n", __func__, on, mdp_clk_cnt);
+	pr_info("%s: on=%d cnt=%d\n", __func__, on, mdp_clk_cnt);
 	mutex_unlock(&mdp_suspend_mutex);
 }
 
@@ -2377,7 +2377,7 @@ static int mdp_off(struct platform_device *pdev)
 	int ret = 0;
 	struct msm_fb_data_type *mfd = platform_get_drvdata(pdev);
 
-	pr_debug("%s:+\n", __func__);
+	pr_info("%s:+\n", __func__);
 	mdp_histogram_ctrl_all(FALSE);
 	atomic_set(&vsync_cntrl.suspend, 1);
 	atomic_set(&vsync_cntrl.vsync_resume, 0);
@@ -2406,7 +2406,7 @@ static int mdp_off(struct platform_device *pdev)
 #ifdef CONFIG_MSM_BUS_SCALING
 	mdp_bus_scale_update_request(0, 0, 0, 0);
 #endif
-	pr_debug("%s:-\n", __func__);
+	pr_info("%s:-\n", __func__);
 	return ret;
 }
 
@@ -2431,7 +2431,7 @@ static int mdp_on(struct platform_device *pdev)
 	int i;
 	mfd = platform_get_drvdata(pdev);
 
-	pr_debug("%s:+\n", __func__);
+	pr_info("%s:+\n", __func__);
 
 	if (!(mfd->cont_splash_done)) {
 		if (mfd->panel.type == MIPI_VIDEO_PANEL)
@@ -2492,7 +2492,7 @@ static int mdp_on(struct platform_device *pdev)
 	if (ret == 0)
 		ret = panel_next_late_init(pdev);
 
-	pr_debug("%s:-\n", __func__);
+	pr_info("%s:-\n", __func__);
 
 #ifdef CONFIG_FB_MSM_MSMFB_KCAL
 	kcal_tuning_apply();
@@ -2639,12 +2639,12 @@ int mdp_bus_scale_update_request(u64 ab_p0, u64 ib_p0, u64 ab_p1, u64 ib_p1)
 	ib_p1 = max(ib_p1, ab_p1);
 	mdp_bus_usecases[bus_index].vectors[1].ib = min(ib_p1, mdp_max_bw);
 
-	pr_debug("%s: handle=%d index=%d ab=%llu ib=%llu\n", __func__,
+	pr_info("%s: handle=%d index=%d ab=%llu ib=%llu\n", __func__,
 		 (u32)mdp_bus_scale_handle, bus_index,
 		 mdp_bus_usecases[bus_index].vectors[0].ab,
 		 mdp_bus_usecases[bus_index].vectors[0].ib);
 
-	pr_debug("%s: p1 handle=%d index=%d ab=%llu ib=%llu\n", __func__,
+	pr_info("%s: p1 handle=%d index=%d ab=%llu ib=%llu\n", __func__,
 		 (u32)mdp_bus_scale_handle, bus_index,
 		 mdp_bus_usecases[bus_index].vectors[1].ab,
 		 mdp_bus_usecases[bus_index].vectors[1].ib);
@@ -2654,10 +2654,10 @@ int mdp_bus_scale_update_request(u64 ab_p0, u64 ib_p0, u64 ab_p1, u64 ib_p1)
 }
 static int mdp_bus_scale_restore_request(void)
 {
-	pr_debug("%s: index=%d ab_p0=%llu ib_p0=%llu\n", __func__, bus_index,
+	pr_info("%s: index=%d ab_p0=%llu ib_p0=%llu\n", __func__, bus_index,
 		 mdp_bus_usecases[bus_index].vectors[0].ab,
 		 mdp_bus_usecases[bus_index].vectors[0].ib);
-	pr_debug("%s: index=%d ab_p1=%llu ib_p1=%llu\n", __func__, bus_index,
+	pr_info("%s: index=%d ab_p1=%llu ib_p1=%llu\n", __func__, bus_index,
 		 mdp_bus_usecases[bus_index].vectors[1].ab,
 		 mdp_bus_usecases[bus_index].vectors[1].ib);
 
@@ -2682,7 +2682,7 @@ int mdp_set_core_clk(u32 rate)
 	if (ret)
 		pr_err("%s unable to set mdp clk rate", __func__);
 	else
-		pr_debug("%s mdp clk rate to be set %d: actual rate %ld\n",
+		pr_info("%s mdp clk rate to be set %d: actual rate %ld\n",
 			__func__, rate, clk_get_rate(mdp_clk));
 	return ret;
 }
@@ -3328,7 +3328,7 @@ static int mdp_probe(struct platform_device *pdev)
 			}
 
 			kobject_uevent(&mfd->fbi->dev->kobj, KOBJ_ADD);
-			pr_debug("%s: kobject_uevent(KOBJ_ADD)\n", __func__);
+			pr_info("%s: kobject_uevent(KOBJ_ADD)\n", __func__);
 			mfd->vsync_sysfs_created = 1;
 		}
 	}
@@ -3369,11 +3369,11 @@ void mdp_footswitch_ctrl(boolean on)
 	mipi_dsi_clk_enable();
 
 	if (on && !mdp_footswitch_on) {
-		pr_debug("Enable MDP FS\n");
+		pr_info("Enable MDP FS\n");
 		regulator_enable(footswitch);
 		mdp_footswitch_on = 1;
 	} else if (!on && mdp_footswitch_on) {
-		pr_debug("Disable MDP FS\n");
+		pr_info("Disable MDP FS\n");
 		regulator_disable(footswitch);
 		mdp_footswitch_on = 0;
 	}
