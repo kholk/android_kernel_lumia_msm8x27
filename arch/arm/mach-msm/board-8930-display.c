@@ -155,7 +155,8 @@ static int mipi_dsi_panel_power(int on)
 {
 	int rc = 0, retVal = 0;
 	static struct regulator *reg_dsi_vddio;
-	static struct regulator *reg_vdd, *reg_iovdd, *reg_vdd_mipi;
+	static struct regulator *reg_vdd, *reg_vdd_mipi;
+	//static struct regulator *reg_iovdd;
 	static bool dsi_power_on = false;
 
 	pr_info("[DISPLAY] +%s(%d)\n", __func__, on);
@@ -164,7 +165,7 @@ static int mipi_dsi_panel_power(int on)
 
 		/* INIT VDD_MIPI */
 		reg_vdd_mipi = regulator_get(&msm_mipi_dsi1_device.dev,
-				"dsi_vdda");
+				"dsi_vdda"); /* L2 */
 		if (IS_ERR(reg_vdd_mipi)) {
 			pr_err("[DISPLAY]could not get reg_vdd_mipi, rc = %ld\n",
 				PTR_ERR(reg_vdd_mipi));
@@ -180,7 +181,7 @@ static int mipi_dsi_panel_power(int on)
 
 		/* INIT VDD FOR LCD*/
 		reg_vdd = regulator_get(&msm_mipi_dsi1_device.dev,
-				"dsi_vdc");
+				"dsi_vdc"); /* L8 */
 		if (IS_ERR(reg_vdd)) {
 			pr_err("[DISPLAY]could not get reg_vdd, rc = %ld\n",
 				PTR_ERR(reg_vdd));
@@ -188,7 +189,7 @@ static int mipi_dsi_panel_power(int on)
 			goto error;
 		}
 					/********** CHECKME ***********/
-		rc = regulator_set_voltage(reg_vdd, 2800000, 2800000);
+		rc = regulator_set_voltage(reg_vdd, 2800000, 2850000);
 		if (rc) {
 			pr_err("[DISPLAY]set_voltage reg_vdd failed, rc=%d\n", rc);
 			retVal = -EINVAL;
@@ -198,7 +199,7 @@ static int mipi_dsi_panel_power(int on)
 #ifdef CONFIG_MACH_NOKIA_FAME
 		pr_info("Enabling display vregs for Nokia FAME...\n");
 		reg_dsi_vddio = regulator_get (
-			&msm_mipi_dsi1_device.dev, "dsi_vddio");
+			&msm_mipi_dsi1_device.dev, "dsi_vddio"); /* L23 */
 		if (IS_ERR(reg_dsi_vddio)) {
 			pr_err("DISP: Cannot get dsi_vddio L23 VREG!!\n");
 			retVal = -EINVAL;
@@ -211,7 +212,7 @@ static int mipi_dsi_panel_power(int on)
 			retVal = -EINVAL;
 			goto error;
 		}
-
+/*
 		reg_iovdd = regulator_get(
 			&msm_mipi_dsi1_device.dev, "lcd_fame_iovdd");
 		if (IS_ERR(reg_iovdd)) {
@@ -226,6 +227,7 @@ static int mipi_dsi_panel_power(int on)
 			retVal = -EINVAL;
 			goto error;
 		}
+*/
 #endif
 
 		dsi_power_on = true;
@@ -244,12 +246,14 @@ static int mipi_dsi_panel_power(int on)
 			retVal = -EINVAL;
 			goto error;
 		}
+/*
 		rc = regulator_set_optimum_mode(reg_iovdd, 100000);
 		if (rc < 0) {
 			pr_err("[DISPLAY]set_optimum_mode reg_iovdd failed, rc=%d\n", rc);
 			retVal = -EINVAL;
 			goto error;
 		}
+*/
 		rc = regulator_set_optimum_mode(reg_dsi_vddio, 100000);
 		if (rc < 0) {
 			pr_err("[DISPLAY]set_optimum_mode reg_iovdd failed, rc=%d\n", rc);
@@ -268,12 +272,14 @@ static int mipi_dsi_panel_power(int on)
 			retVal = -ENODEV;
 			goto error;
 		}
+/*
 		rc = regulator_enable(reg_iovdd);
 		if (rc) {
 			pr_err("[DISPLAY]enable l18 failed, rc=%d\n", rc);
 			retVal = -ENODEV;
 			goto error;
 		}
+*/
 		rc = regulator_enable(reg_vdd);
 		if (rc) {
 			pr_err("[DISPLAY]enable l8 failed, rc=%d\n", rc);
@@ -282,12 +288,14 @@ static int mipi_dsi_panel_power(int on)
 		}
 
 	} else {
+/*
 		rc = regulator_disable(reg_iovdd);
 		if (rc) {
 			pr_err("[DISPLAY]disable reg_vdd failed, rc=%d\n", rc);
 			retVal = -ENODEV;
 			goto error;
 		}
+*/
 		rc = regulator_disable(reg_vdd);
 		if (rc) {
 			pr_err("[DISPLAY]disable reg_vdd failed, rc=%d\n", rc);
@@ -319,13 +327,14 @@ static int mipi_dsi_panel_power(int on)
 			retVal = -EINVAL;
 			goto error;
 		}
-
+/*
 		rc = regulator_set_optimum_mode(reg_iovdd, 100);
 		if (rc < 0) {
 			pr_err("[DISPLAY]set_optimum_mode reg_iovdd failed, rc=%d\n", rc);
 			retVal = -EINVAL;
 			goto error;
 		}
+*/
 	}
 
 error:

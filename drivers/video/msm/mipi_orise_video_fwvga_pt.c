@@ -22,26 +22,36 @@
 #include "mipi_dsi.h"
 #include "mipi_orise.h"
 
-#define PANEL_NAME	"Race WVGA DSI Command Panel"
+#define PANEL_NAME	"Race WVGA DSI Command"
 
 static struct msm_panel_info pinfo;
 
 static struct mipi_dsi_phy_ctrl dsi_video_mode_phy_db = {
 	/* DSIPHY_REGULATOR_CTRL */
 	.regulator = {0x02, 0x08, 0x05, 0x00, 0x20},
+	//.regulator = {0x02, 0x0a, 0x04, 0x00, 0x20},
 	/* DSIPHY_CTRL */
 	.ctrl = {0x5f, 0x00, 0x00, 0x10}, /* common 8960 */
 	/* DSIPHY_STRENGTH_CTRL */
 	.strength = {0xff, 0x00, 0x06, 0x00}, /* common 8960 */
 
+#if 1
 	/* DSIPHY_TIMING_CTRL */
 	/* tCLK:    ZERO, TRAIL,PREP. TIMING_CTRL_3 */
 	.timing = { 0x67, 0x16, 0x0d, 0x00,
-	/* tHS:     ????  EXIT, ZERO, PREP, RQST */
-		    0x38, 0x3c, 0x12, 0x19, 0x18,
+	/* tHS:     EXIT, ZERO, PREP, RQST */
+		    0x3c, 0x12, 0x19, 0x18,
 	/* tTA:     SURE, GO,   GET */
 		    0x03, 0x03, 0xa0},
+#else
 
+	.timing = { 0x73, 0x26, 0x17,							/* panel specific tCLK-ZERO, tCLK-TRAIL, tCLK-PREPARE*/
+				0,					 						/* DSIPHY_TIMING_CTRL_3 = 0 */
+				0x3C, 0x46, 0x21, 0x2A, 0x1C, 0x03, 0x04}, 	/* panel specific tHS-EXIT, tHS-ZERO, tHS-PREPARE, tHS-TRAIL, tHS-RQST, tTA-SURE, tTA-GO, tTA-GET*/
+#endif
+/* MM-VH-DISPLAY-NICKI17*] */
+
+#if 1
 	/* DSIPHY_PLL_CTRL */
 	.pll = { 0x01,		/* VCO */
 	0x25, 0x30, 0xc2,	/* Panel specific */
@@ -50,6 +60,15 @@ static struct mipi_dsi_phy_ctrl dsi_video_mode_phy_db = {
 	0x41, 0x01, 0x01,	/* Auto update by mipi-dsi driver */
 	0x00, 0x00, 0x00, 0x00, 0x02,	/* MSM8227 common */
 	0x00, 0x20, 0x00, 0x01 },	/* MSM8227 common */
+#else
+	.pll = { 0x00,		/* VCO */
+	0x80, 0x30, 0xc0,	/* panel specific */
+	0x00, 0x10, 0x08, 0x62, /* MIPI DSI common */
+
+	0x71, 0x88, 0x99,	/* Auto update by mipi-dsi driver */
+	0x00, 0x14, 0x03, 0x00, 0x02,	/* MSM8227 common */
+	0x00, 0x20, 0x00, 0x01 },	/* MSM8227 common */
+#endif
 };
 
 static int __init mipi_race_pt_cmd_init(void)
@@ -119,7 +138,7 @@ static int __init mipi_race_pt_cmd_init(void)
 	pinfo.mipi.dma_trigger = DSI_CMD_TRIGGER_SW;
 	pinfo.mipi.frame_rate = 60;
 	pinfo.mipi.dsi_phy_db = &dsi_video_mode_phy_db;
-	pinfo.mipi.dlane_swap = 0x00; //0x01;
+	pinfo.mipi.dlane_swap = 0x01;
 	pinfo.mipi.esc_byte_ratio = 4;
 
 	ret = mipi_orise_device_register(&pinfo, MIPI_DSI_PRIM,

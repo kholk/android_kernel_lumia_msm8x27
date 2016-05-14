@@ -21,6 +21,7 @@
 #include <linux/completion.h>
 #include <linux/termios.h>
 #include <linux/smux.h>
+#include <linux/workqueue.h>
 #include "smux_private.h"
 
 #define DEBUG_BUFMAX 4096
