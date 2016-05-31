@@ -774,7 +774,7 @@ void mdp4_overlay_solidfill_init(struct mdp4_overlay_pipe *pipe)
 	uint32 format;
 	uint32 off;
 	int i;
-
+pr_info("SOLIDFILL INIT\n");
 	src_size = ((pipe->src_h << 16) | pipe->src_w);
 	src_xy = ((pipe->src_y << 16) | pipe->src_x);
 	dst_size = ((pipe->dst_h << 16) | pipe->dst_w);
@@ -1780,7 +1780,7 @@ void mdp4_mixer_reset(int mixer)
 {
 	uint32 data, data1, mask;
 	int i, ndx, min, max, bit;
-
+pr_info("mixer reset\n");
 	mdp_clk_ctrl(1);
 	/* MDP_LAYERMIXER_IN_CFG, shard by both mixer 0 and 1  */
 	data = inpdw(MDP_BASE + 0x10100);
@@ -1827,7 +1827,7 @@ void mdp4_mixer_stage_commit(int mixer)
 	u32 data, stage;
 	int off;
 	unsigned long flags;
-
+pr_info("stage commit\n");
 	data = 0;
 	for (i = MDP4_MIXER_STAGE_BASE; i < MDP4_MIXER_STAGE_MAX; i++) {
 		pipe = ctrl->stage[mixer][i];
@@ -3054,7 +3054,7 @@ int mdp4_calc_blt_mdp_bw(struct msm_fb_data_type *mfd,
 static int mdp4_axi_port_read_client_pipe(struct mdp4_overlay_pipe *pipe)
 {
 	u32 data = 0, port = 0;
-
+pr_info("axi_port_read_client_pipe\n");
 	mdp_clk_ctrl(1);
 	data = inpdw(MDP_BASE + 0x0404);
 	mdp_clk_ctrl(0);
@@ -3075,7 +3075,7 @@ static int mdp4_axi_port_read_client_pipe(struct mdp4_overlay_pipe *pipe)
 static int mdp4_axi_port_read_client_mixer(int mixer)
 {
 	u32 data = 0, port = 0;
-
+pr_info("read_client_mixer\n");
 	mdp_clk_ctrl(1);
 	data = inpdw(MDP_BASE + 0x0404);
 	mdp_clk_ctrl(0);
@@ -3092,7 +3092,7 @@ static int mdp4_axi_port_read_client_mixer(int mixer)
 static int mdp4_axi_port_write_client_mixer(int mixer)
 {
 	u32 data = 0, port = 0;
-
+pr_info("write_client_mixer\n");
 	mdp_clk_ctrl(1);
 	data = inpdw(MDP_BASE + 0x0408);
 	mdp_clk_ctrl(0);

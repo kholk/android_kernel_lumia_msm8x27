@@ -84,7 +84,7 @@ static void vsync_irq_enable(int intr, int term)
 	outp32(MDP_INTR_ENABLE, mdp_intr_mask);
 	mdp_enable_irq(term);
 	spin_unlock_irqrestore(&mdp_spin_lock, flag);
-	pr_debug("%s: IRQ-en done, term=%x\n", __func__, term);
+	pr_info("%s: IRQ-en done, term=%x\n", __func__, term);
 }
 
 static void vsync_irq_disable(int intr, int term)
@@ -97,7 +97,7 @@ static void vsync_irq_disable(int intr, int term)
 	outp32(MDP_INTR_ENABLE, mdp_intr_mask);
 	mdp_disable_irq_nosync(term);
 	spin_unlock_irqrestore(&mdp_spin_lock, flag);
-	pr_debug("%s: IRQ-dis done, term=%x\n", __func__, term);
+	pr_info("%s: IRQ-dis done, term=%x\n", __func__, term);
 }
 
 static void mdp4_overlay_lcdc_start(void)
@@ -138,7 +138,7 @@ void mdp4_lcdc_pipe_queue(int cndx, struct mdp4_overlay_pipe *pipe)
 
 	pp = &vp->plist[pipe->pipe_ndx - 1];	/* ndx start form 1 */
 
-	pr_debug("%s: vndx=%d pipe_ndx=%d pid=%d\n", __func__,
+	pr_info("%s: vndx=%d pipe_ndx=%d pid=%d\n", __func__,
 			undx, pipe->pipe_ndx, current->pid);
 
 	*pp = *pipe;	/* clone it */
@@ -324,7 +324,7 @@ static void mdp4_lcdc_vsync_irq_ctrl(int cndx, int enable)
 						MDP_PRIM_VSYNC_TERM);
 		}
 	}
-	pr_debug("%s: enable=%d cnt=%d\n", __func__, enable, vsync_irq_cnt);
+	pr_info("%s: enable=%d cnt=%d\n", __func__, enable, vsync_irq_cnt);
 	mutex_unlock(&vctrl->update_lock);
 }
 
@@ -338,7 +338,7 @@ void mdp4_lcdc_vsync_ctrl(struct fb_info *info, int enable)
 	if (vctrl->vsync_irq_enabled == enable)
 		return;
 
-	pr_debug("%s: vsync enable=%d\n", __func__, enable);
+	pr_info("%s: vsync enable=%d\n", __func__, enable);
 
 	vctrl->vsync_irq_enabled = enable;
 
@@ -750,7 +750,7 @@ int mdp4_lcdc_off(struct platform_device *pdev)
 	unsigned long flags;
 	int undx, need_wait = 0;
 	int mixer = 0;
-
+pr_info("MDP4_LCDC_OFF\n");
 	mfd = (struct msm_fb_data_type *)platform_get_drvdata(pdev);
 
 	mutex_lock(&mfd->dma->ov_mutex);
@@ -818,7 +818,7 @@ int mdp4_lcdc_off(struct platform_device *pdev)
 	 */
 	mdp4_overlay_iommu_unmap_freelist(mixer);
 	mdp4_overlay_iommu_unmap_freelist(mixer);
-
+pr_info("LCDC OFF CLK CTRL 0\n");
 	/* MDP clock disable */
 	mdp_clk_ctrl(0);
 	mdp_pipe_ctrl(MDP_OVERLAY0_BLOCK, MDP_BLOCK_POWER_OFF, FALSE);
@@ -885,7 +885,7 @@ void mdp4_primary_vsync_lcdc(void)
 
 	cndx = 0;
 	vctrl = &vsync_ctrl_db[cndx];
-	pr_debug("%s: cpu=%d\n", __func__, smp_processor_id());
+	pr_info("%s: cpu=%d\n", __func__, smp_processor_id());
 
 	spin_lock(&vctrl->spin_lock);
 	vctrl->vsync_time = ktime_get();
@@ -1043,7 +1043,7 @@ void mdp4_lcdc_overlay(struct msm_fb_data_type *mfd)
 		return;
 	}
 
-	pr_debug("%s: cpu=%d pid=%d\n", __func__,
+	pr_info("%s: cpu=%d pid=%d\n", __func__,
 			smp_processor_id(), current->pid);
 	if (pipe->pipe_type == OVERLAY_TYPE_RGB) {
 		bpp = fbi->var.bits_per_pixel / 8;

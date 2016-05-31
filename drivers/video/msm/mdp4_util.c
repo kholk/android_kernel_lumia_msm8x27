@@ -207,7 +207,7 @@ void mdp4_sw_reset(ulong bits)
 	/* MDP cmd block disable */
 	mdp_pipe_ctrl(MDP_CMD_BLOCK, MDP_BLOCK_POWER_OFF, FALSE);
 
-	pr_debug("mdp4_sw_reset: 0x%x\n", (int)bits);
+	pr_info("mdp4_sw_reset: 0x%x\n", (int)bits);
 }
 
 void mdp4_overlay_cfg(int overlayer, int blt_mode, int refresh, int direct_out)
@@ -391,6 +391,7 @@ void mdp4_hw_init(void)
 	ulong bits;
 	uint32 clk_rate;
 	int i;
+pr_info("mdp4_hw_init\n");
 	/* MDP cmd block enable */
 	mdp_pipe_ctrl(MDP_CMD_BLOCK, MDP_BLOCK_POWER_ON, FALSE);
 	mdp_clk_ctrl(1);
@@ -467,6 +468,7 @@ void mdp4_hw_init(void)
 
 	/* MDP cmd block disable */
 	mdp_pipe_ctrl(MDP_CMD_BLOCK, MDP_BLOCK_POWER_OFF, FALSE);
+pr_info("hw init ... mdp_clk_ctrl\n");
 	mdp_clk_ctrl(0);
 }
 
@@ -524,7 +526,7 @@ irqreturn_t mdp4_isr(int irq, void *ptr)
 	outpdw(MDP_INTR_CLEAR, isr);
 
 	if (isr & INTR_PRIMARY_INTF_UDERRUN) {
-		pr_debug("%s: UNDERRUN -- primary\n", __func__);
+		pr_info("%s: UNDERRUN -- primary\n", __func__);
 		mdp4_stat.intr_underrun_p++;
 		/* When underun occurs mdp clear the histogram registers
 		that are set before in hw_init so restore them back so
@@ -538,7 +540,7 @@ irqreturn_t mdp4_isr(int irq, void *ptr)
 	}
 
 	if (isr & INTR_EXTERNAL_INTF_UDERRUN) {
-		pr_debug("%s: UNDERRUN -- external\n", __func__);
+		pr_info("%s: UNDERRUN -- external\n", __func__);
 		mdp4_stat.intr_underrun_e++;
 	}
 
@@ -2406,7 +2408,7 @@ void mdp4_free_writeback_buf(struct msm_fb_data_type *mfd, u32 mix_num)
 	} else {
 		if (buf->write_addr) {
 			free_contiguous_memory_by_paddr(buf->write_addr);
-			pr_debug("%s:%d free writeback pmem\n", __func__,
+			pr_info("%s:%d free writeback pmem\n", __func__,
 				__LINE__);
 		}
 	}
@@ -3197,7 +3199,7 @@ int mdp4_calib_config(struct mdp_calib_config_data *cfg)
 {
 	int ret = -1;
 	void *ptr = (void *) cfg->addr;
-
+pr_info("mdp4_calib_config\n");
 	if (is_valid_calib_addr(ptr))
 		ret = 0;
 	else
@@ -3211,6 +3213,7 @@ int mdp4_calib_config(struct mdp_calib_config_data *cfg)
 	} else if (cfg->ops & MDP_PP_OPS_WRITE) {
 		outpdw(ptr, cfg->data);
 	}
+pr_info("mdp_clk_ctrl 0\n");
 	mdp_clk_ctrl(0);
 	return ret;
 }

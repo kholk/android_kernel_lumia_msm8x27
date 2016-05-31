@@ -104,11 +104,11 @@ static int __init mipi_race_pt_cmd_init(void)
 
 	/* Logo */
 	pinfo.width = 50;
-	pinfo.height = 89;
+	pinfo.height = 80;
 
 	pinfo.mipi.mode = DSI_CMD_MODE;
 
-	pinfo.mipi.pulse_mode_hsa_he = FALSE;
+	//pinfo.mipi.pulse_mode_hsa_he = FALSE;
 	pinfo.mipi.hfp_power_stop = FALSE;
 	pinfo.mipi.hbp_power_stop = FALSE;
 	pinfo.mipi.hsa_power_stop = FALSE;
@@ -117,8 +117,8 @@ static int __init mipi_race_pt_cmd_init(void)
 	pinfo.mipi.bllp_power_stop = TRUE;
 
 				/* May be DSI_NON_BURST_SYNCH_EVENT */
-	pinfo.mipi.traffic_mode = DSI_NON_BURST_SYNCH_PULSE;
-	pinfo.mipi.dst_format = DSI_VIDEO_DST_FORMAT_RGB888;
+	//pinfo.mipi.traffic_mode = DSI_NON_BURST_SYNCH_PULSE;
+	pinfo.mipi.dst_format = DSI_CMD_DST_FORMAT_RGB888;
 	pinfo.mipi.vc = 0;
 	pinfo.mipi.rgb_swap = DSI_RGB_SWAP_RGB;
 
@@ -134,11 +134,21 @@ static int __init mipi_race_pt_cmd_init(void)
 	pinfo.mipi.t_clk_post = 0x0f;
 	pinfo.mipi.t_clk_pre = 0x08;
 	pinfo.mipi.stream = 0; /* dma_p */
-	pinfo.mipi.mdp_trigger = DSI_CMD_TRIGGER_NONE;
+	//pinfo.mipi.mdp_trigger = DSI_CMD_TRIGGER_NONE;
+	//pinfo.mipi.dma_trigger = DSI_CMD_TRIGGER_SW;
+	pinfo.mipi.mdp_trigger = DSI_CMD_TRIGGER_SW;
 	pinfo.mipi.dma_trigger = DSI_CMD_TRIGGER_SW;
 	pinfo.mipi.frame_rate = 60;
 	pinfo.mipi.dsi_phy_db = &dsi_video_mode_phy_db;
 	pinfo.mipi.dlane_swap = 0x01;
+	pinfo.lcd.refx100 = 7000; /* adjust refx100 to prevent tearing */
+	pinfo.mipi.te_sel = 1; /* TE from vsync gpio *///
+	pinfo.mipi.interleave_max = 1;
+	pinfo.mipi.insert_dcs_cmd = TRUE;
+	pinfo.mipi.wr_mem_continue = 0x3c;
+	pinfo.mipi.wr_mem_start = 0x2c;
+	pinfo.lcd.vsync_enable = TRUE;
+	pinfo.lcd.hw_vsync_mode = TRUE;
 	pinfo.mipi.esc_byte_ratio = 4;
 
 	ret = mipi_orise_device_register(&pinfo, MIPI_DSI_PRIM,

@@ -260,16 +260,21 @@ void mdp_vsync_cfg_regs(struct msm_fb_data_type *mfd,
 	boolean first_time)
 {
 	/* MDP cmd block enable */
+pr_info("vsync_cfg_regs MDP BLOCK POWERON\n");
 	mdp_pipe_ctrl(MDP_CMD_BLOCK, MDP_BLOCK_POWER_ON,
 			  FALSE);
-	if (first_time)
+	if (first_time) {
+		pr_info("Enabling VSYNC CLK\n");
 		mdp_hw_vsync_clk_enable(mfd);
-
+	}
+pr_info("set sync config\n");
 	mdp_set_sync_cfg_0(mfd, vsync_cnt_cfg);
 
 #ifdef CONFIG_FB_MSM_MDP40
-	if (mdp_hw_revision < MDP4_REVISION_V2_1)
+	if (mdp_hw_revision < MDP4_REVISION_V2_1) {
+pr_info("set sync config 1\n");
 		mdp_set_sync_cfg_1(mfd, vsync_cnt_cfg);
+	}
 #endif
 
 	/*
@@ -308,6 +313,7 @@ void mdp_vsync_cfg_regs(struct msm_fb_data_type *mfd,
 		mdp_hw_vsync_clk_disable(mfd);
 
 	/* MDP cmd block disable */
+	pr_info("MDP block power off\n");
 	mdp_pipe_ctrl(MDP_CMD_BLOCK, MDP_BLOCK_POWER_OFF, FALSE);
 }
 #endif

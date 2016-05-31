@@ -258,6 +258,7 @@ void hwid_pull_pm_gpio(int PL1, int PL2, int PL3)
 {
     int rc;
 
+
     static struct pm_gpio HWID_GPIO_high = {
         .direction		  = PM_GPIO_DIR_IN,
         .output_buffer	  = PM_GPIO_OUT_BUF_OPEN_DRAIN,
@@ -282,7 +283,7 @@ void hwid_pull_pm_gpio(int PL1, int PL2, int PL3)
         .disable_pin	  = 0,
     };
 
-
+return;
     if (PL1 == 1) {
         rc = pm8xxx_gpio_config(PM8038_GPIO_PM_TO_SYS(10),&HWID_GPIO_high);
     } else {
@@ -409,7 +410,8 @@ int fih_hwid_read(void)
     char *cp;
     uint32_t *hp;
     printk(KERN_DEBUG "FIH kernel [HWID] - fih_hwid_probe++\n");
-
+pr_info("SKIPPING FIH HWID CONFIGURATION.\n");
+return 0;
 
     rc = pm8xxx_mpp_config(PM8038_MPP_PM_TO_SYS(5), &hwid_mpp_init);
     if (rc) {

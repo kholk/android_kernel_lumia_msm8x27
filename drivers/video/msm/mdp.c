@@ -2434,6 +2434,7 @@ static int mdp_on(struct platform_device *pdev)
 	pr_info("%s:+\n", __func__);
 
 	if (!(mfd->cont_splash_done)) {
+		pr_info("cont splash done is FALSE.....\n");
 		if (mfd->panel.type == MIPI_VIDEO_PANEL)
 			mdp4_dsi_video_splash_done();
 
@@ -2446,38 +2447,46 @@ static int mdp_on(struct platform_device *pdev)
 	if(mfd->index == 0)
 		mdp_iommu_max_map_size = mfd->max_map_size;
 	mdp_pipe_ctrl(MDP_CMD_BLOCK, MDP_BLOCK_POWER_ON, FALSE);
-
+pr_info("Calling panel_next_on\n");
 	ret = panel_next_on(pdev);
 	mdp_pipe_ctrl(MDP_CMD_BLOCK, MDP_BLOCK_POWER_OFF, FALSE);
 
 
 	if (mdp_rev >= MDP_REV_40) {
+		pr_info("Power on MDP block. Enable Clocks.\n");
 		mdp_pipe_ctrl(MDP_CMD_BLOCK, MDP_BLOCK_POWER_ON, FALSE);
 		mdp_clk_ctrl(1);
 		mdp_bus_scale_restore_request();
+		pr_info("MDP_ON calling hardware initialization\n");
 		mdp4_hw_init();
 
+		pr_info(" Initializing HistLUT\n");
 		/* Initialize HistLUT to last LUT */
 		for (i = 0; i < MDP_HIST_LUT_SIZE; i++) {
 			MDP_OUTP(MDP_BASE + 0x94800 + i*4, last_lut[i]);
 			MDP_OUTP(MDP_BASE + 0x94C00 + i*4, last_lut[i]);
 		}
-
+		pr_info("MDP LUT Status restore\n");
 		mdp_lut_status_restore();
 		outpdw(MDP_BASE + 0x0038, mdp4_display_intf);
 		if (mfd->panel.type == MIPI_CMD_PANEL) {
+			pr_info("Panel type is CMD. CONFIGURING VSYNC\n");
 			mdp_vsync_cfg_regs(mfd, FALSE);
+			pr_info("CMD ON!\n");
 			mdp4_dsi_cmd_on(pdev);
 		} else if (mfd->panel.type == MIPI_VIDEO_PANEL) {
+			pr_info("Panel VIDEO MODE\n");
 			mdp4_dsi_video_on(pdev);
 		} else if (mfd->panel.type == HDMI_PANEL ||
 				mfd->panel.type == LCDC_PANEL ||
 				mfd->panel.type == LVDS_PANEL) {
 			mdp4_lcdc_on(pdev);
 		}
-
+		pr_info("Initialization done. Disabling clocks.\n");
 		mdp_clk_ctrl(0);
+		pr_info("Resetting overlay\n");
 		mdp4_overlay_reset();
+		pr_info("Power off MDP block.\n");
 		mdp_pipe_ctrl(MDP_CMD_BLOCK, MDP_BLOCK_POWER_OFF, FALSE);
 	}
 
@@ -2486,11 +2495,13 @@ static int mdp_on(struct platform_device *pdev)
 		vsync_cntrl.dev = mfd->fbi->dev;
 		atomic_set(&vsync_cntrl.suspend, 1);
 	}
-
+pr_info("MDP Histogram init\n");
 	mdp_histogram_ctrl_all(TRUE);
 
-	if (ret == 0)
+	if (ret == 0) {
+		pr_info("Panel late init\n");
 		ret = panel_next_late_init(pdev);
+	}
 
 	pr_info("%s:-\n", __func__);
 
@@ -2833,7 +2844,7 @@ static int mdp_probe(struct platform_device *pdev)
 #if defined(CONFIG_FB_MSM_MIPI_DSI) && defined(CONFIG_FB_MSM_MDP40)
 	struct mipi_panel_info *mipi;
 #endif
-
+pr_info("--------___MDP PROBE START___----------\n");
 	if ((pdev->id == 0) && (pdev->num_resources > 0)) {
 		mdp_init_pdev = pdev;
 		mdp_pdata = pdev->dev.platform_data;
@@ -3332,6 +3343,8 @@ static int mdp_probe(struct platform_device *pdev)
 			mfd->vsync_sysfs_created = 1;
 		}
 	}
+pr_info("--------___MDP PROBE END___----------\n");
+
 #ifdef CONFIG_FB_MSM_MSMFB_KCAL
        return kcal_create_sysfs(mfd);
 #endif

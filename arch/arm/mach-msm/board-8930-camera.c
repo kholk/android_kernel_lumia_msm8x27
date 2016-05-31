@@ -733,7 +733,9 @@ static struct msm_camera_sensor_info msm_camera_sensor_ov2720_data = {
 
 static struct msm_camera_sensor_flash_data flash_s5k3l1yx = {
 	.flash_type = MSM_CAMERA_FLASH_LED,
+#ifdef CONFIG_MSM_CAMERA_FLASH
 	.flash_src = &msm_flash_src
+#endif
 };
 
 static struct msm_camera_csi_lane_params s5k3l1yx_csi_lane_params = {

@@ -53,7 +53,7 @@ static struct dsi_cmd_desc nok_panel_race_on_cmds[] = {
 	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(race_unknown_cmd), race_unknown_cmd},
 	{DTYPE_DCS_WRITE, 1, 0, 0, 0, sizeof(race_set_pixel_format), race_set_pixel_format},
 	{DTYPE_DCS_WRITE, 1, 0, 0, 0, sizeof(race_ctrl_display), race_ctrl_display},
-	{DTYPE_DCS_WRITE, 1, 0, 0, 0, sizeof(race_lcm_brightness), race_lcm_brightness},
+	{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(race_lcm_brightness), race_lcm_brightness},
 	{DTYPE_DCS_WRITE, 1, 0, 0, 0, sizeof(race_cabc_on), race_cabc_on},
 	{DTYPE_DCS_WRITE, 1, 0, 0, 0, sizeof(race_set_pixel_format), race_set_pixel_format},
 	{DTYPE_DCS_WRITE, 1, 0, 0, 0, sizeof(race_disp_on), race_disp_on},
@@ -63,6 +63,10 @@ static struct dsi_cmd_desc nok_panel_race_off_cmds[] = {
 	{DTYPE_DCS_WRITE, 1, 0, 0, 0, sizeof(race_cabc_off), race_cabc_off},
 	{DTYPE_DCS_WRITE, 1, 0, 0, 0, sizeof(race_disp_off), race_disp_off},
 	{DTYPE_DCS_WRITE, 1, 0, 0, 0, sizeof(dsi_enter_sleep), dsi_enter_sleep},
+};
+
+static struct dsi_cmd_desc race_backlight_cmd = {
+	DTYPE_DCS_LWRITE, 1, 0, 0, 1, sizeof(race_lcm_brightness), race_lcm_brightness
 };
 
 /* Nokia RACE WVGA DSI CMD Panel (480x800x24) END   */
@@ -160,9 +164,31 @@ static int mipi_orise_lcd_off(struct platform_device *pdev)
 extern int fih_wled_set(int level);
 static void mipi_orise_lcd_backlight(struct msm_fb_data_type *mfd)
 {
+	struct dcs_cmd_req cmdreq;
+
 	if (unlikely(!display_initialize))
 		return;
-#ifdef CONFIG_FIH_SW_LCM_BC
+
+	pr_info("BACKLIGHT: Setting level %d\n", mfd->bl_level);
+
+	race_lcm_brightness[1] = mfd->bl_level;
+
+	memset(&cmdreq, 0, sizeof(cmdreq));
+	cmdreq.cmds = &race_backlight_cmd;
+	cmdreq.cmds_cnt = 1;
+	cmdreq.flags = CMD_REQ_COMMIT | CMD_CLK_CTRL;
+	cmdreq.rlen = 0;
+	cmdreq.cb = NULL;
+	mipi_dsi_cmdlist_put(&cmdreq);
+/*
+	down(&mfd->dma->mutex);
+	mipi_set_tx_power_mode(0);
+	mipi_dsi_cmds_tx(&orise_tx_buf, race_backlight_cmd,
+				ARRAY_SIZE(race_backlight_cmd));
+	mipi_set_tx_power_mode(1);
+	up(&mfd->dma->mutex);
+*/
+#if 0
 	write_display_brightness[1] = BKL_PWM[mfd->bl_level];  /* Duty_Cycle */
 
 	down(&mfd->dma->mutex);
@@ -171,8 +197,6 @@ static void mipi_orise_lcd_backlight(struct msm_fb_data_type *mfd)
 			ARRAY_SIZE(orise_video_bkl_cmds));
 	mipi_set_tx_power_mode(1);
 	up(&mfd->dma->mutex);
-#else
-	fih_wled_set(mfd->bl_level);
 #endif
 }
 static int __devinit mipi_orise_lcd_probe(struct platform_device *pdev)
